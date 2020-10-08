@@ -1,23 +1,24 @@
-version: '3'
+version: "3"
 
 services:
-  3deposit-proxy:
-    # The official v2 Traefik docker image
-    image: traefik:v2.3
-    container_name: 3deposit-proxy
-    # Enables the web UI and tells Traefik to listen to docker
-    command: --api.insecure=true --providers.docker
+  traefik:
+    container_name: traefik
+    image: traefik:1.7
+    command: --docker # --api
     ports:
-      # The HTTP port
       - "80:80"
-      # The Web UI (enabled by --api.insecure=true)
-      - "8080:8080"
+      - "443:443"
+      # - "8080:8080" # The Web UI (enabled by --api)
     volumes:
-      # So that Traefik can listen to the Docker events
       - /var/run/docker.sock:/var/run/docker.sock
+      - ./traefik.toml:/traefik.toml
+      # map host cert directory to container
+      - /etc/pki/tls/:/etc/traefik/tls/
     networks:
       - proxy
-
-networks:
+    restart: always
+    environment:
+      - GODEBUG=tls13=1
+networks: 
   proxy:
     external: true
